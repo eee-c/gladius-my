@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src='/javascripts/require.js'></script>
+  <script>
+    require.config({
+      baseUrl: 'javascripts'
+    });
+    require(['gladius-core'], function(Gladius){
+      function game( engine ) {
+        var math = engine.math;
+
+        var space = new engine.core.Space();
+
+        var cube = new engine.core.Entity({ name: 'MyCube' });
+        space.add( cube );
+
+        var resources = {};
+        engine.core.resource.get(
+          [
+            {
+              load: engine.core.resource.proceduralLoad,
+              url: 'procedural-mesh.js',
+              type: engine.graphics.resource.Mesh,
+              onsuccess: function( mesh ) {
+                resources.mesh = mesh;
+              },
+              onfailure: function( error ) {
+              }
+            },
+            {
+              load: engine.core.resource.proceduralLoad,
+              url: 'procedural-material.js',
+              type: engine.graphics.resource.Material,
+              onsuccess: function( material ) {
+                resources.material = material;
+              },
+              onfailure: function( error ) {
+              }
+            }
+          ],
+          {
+            oncomplete: run
+          }
+        );
+
+        function run() {
+          cube.add( new engine.core.component.Transform({
+            rotation: math.Vector3( 1, 2, 3 )
+          }));
+          cube.add( new engine.graphics.component.Model({
+            mesh: resources.mesh,
+            material: resources.material
+          }));
+
+          var camera = new engine.core.Entity({
+            name: 'Mycamera',
+            components: [
+              new engine.core.component.Transform({
+                position: math.Vector3( 0, 0, 2 )
+              }),
+              new engine.graphics.component.Camera({
+                active: true,
+                width: 320,
+                height: 240
+              }),
+              new engine.graphics.component.Light()
+            ]
+          });
+
+          space.add( camera );
+          camera.target = cube.find( 'Transform' ).position;
+
+          engine.run();
+        };
+      };
+
+      var testCanvas = document.getElementById( "test-canvas" );
+      var gladius = new Gladius();
+      gladius.registerExtension(
+        {
+          services: {
+            graphics: {
+              src: 'graphics/service',
+              options: {
+                canvas: testCanvas
+              }
+            }
+          }
+        }
+      );
+/*
+      Gladius.create(
+        {
+          services: {
+            graphics: {
+              src: 'graphics/service',
+              options: {
+                canvas: testCanvas
+              }
+            }
+          }
+        },
+        game
+      );
+*/
+    });
+</script>
+</head>
+<body>
+  <canvas id="test-canvas" width="320" height="240">
+  </canvas>
+</body>
+
+</html>
