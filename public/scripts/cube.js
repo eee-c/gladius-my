@@ -1,13 +1,4 @@
-<!DOCTYPE html>
-<html>
-  <head>
-  <script src='/scripts/require.js'></script>
-  <script>
-require.config({
-  baseUrl: 'scripts'
-});
-require(['gladius-core', 'gladius-cubicvr'],
-  function(Gladius, cubicvrExtension){
+document.addEventListener( "DOMContentLoaded", function( e ) {
 
   var engine = new Gladius();
 
@@ -28,7 +19,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       canvas: document.getElementById( "test-canvas" )
     }
   };
-  engine.registerExtension( cubicvrExtension, cubicvrOptions );
+  engine.registerExtension( Gladius["gladius-cubicvr"], cubicvrOptions );
 
   var resources = {};
 
@@ -122,14 +113,4 @@ require(['gladius-core', 'gladius-cubicvr'],
     engine.resume();
   }
 
-
 });
-    </script>
-    <title>Gladius Cube Example</title>
-  </head>
-  <body>
-    <canvas style="float: left; margin: 10px"
-     	 id="test-canvas" width="500" height="500">
-    </canvas>
-  </body>
-</html>
