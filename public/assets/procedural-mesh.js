@@ -7,34 +7,30 @@ function proc( options ) {
   var mesh =
   {
     points: [
-      [ point, -point,  point],
-      [ point,  point,  point],
-      [-point,  point,  point],
-      [-point, -point,  point],
-      [ point, -point, -point],
-      [ point,  point, -point],
-      [-point,  point, -point],
-      [-point, -point, -point]
+      [ point, 0,      0],
+      [ 0,     point,  0],
+      [-point, 0,      0],
+      [ 0,    -point,  0],
+      [ 0,     0,      2.5*point]
     ],
     faces: [
-      [0, 1, 2, 3],
-      [7, 6, 5, 4],
-      [4, 5, 1, 0],
-      [5, 6, 2, 1],
-      [6, 7, 3, 2],
-      [7, 4, 0, 3]
+      [3, 2, 1, 0],
+      [0, 1, 4],
+      [1, 2, 4],
+      [2, 3, 4],
+      [3, 0, 4]
     ],
     uv: [
       [ [0, 1], [1, 1], [1, 0], [0, 0] ],
       [ [0, 1], [1, 1], [1, 0], [0, 0] ],
       [ [0, 1], [1, 1], [1, 0], [0, 0] ],
       [ [0, 1], [1, 1], [1, 0], [0, 0] ],
-      [ [0, 1], [1, 1], [1, 0], [0, 0] ],
       [ [0, 1], [1, 1], [1, 0], [0, 0] ]
     ],
+    // wireframe: true,
     uvmapper: {
-            projectionMode: "cubic",
-            scale: [1, 1, 1]
+      projectionMode: "cubic",
+      scale: [1, 1, 1]
     }
   };
 

@@ -1,5 +1,9 @@
     function proc( options ) {
         return {
-            color: [1, 0.2, 0]
+          // textures: {
+          //   color: '/images/1422-diffuse.jpg'
+          // },
+          color: [0, 0.2, 1],
+          opacity: 1.0
         };
     }
