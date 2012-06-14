@@ -35,17 +35,21 @@ function proc( options ) {
     }
   }
 
-  console.log(points);
-  console.log(faces);
+  var uv = [];
+  for (var i=0; i< faces.length; i++) {
+    uv.push([ [1, 0], [0, 0], [0, 1] ]);
+  }
 
   var mesh =
   {
     points: points,
     faces: faces,
-//    wireframe: true
+    uv: uv,
     uvmapper: {
       projectionMode: "spherical",
-      scale: [1, 1, 1]
+      projectionAxis: "y",
+      wrapW: 5,
+      wrapH: 2.5
     }
   };
 
