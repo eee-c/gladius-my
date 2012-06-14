@@ -2,55 +2,34 @@ function proc( options ) {
 
   options = options || {};
   options.size = options.size || 1.0;
-  var point = options.size / 2.0;
 
-  var M_TWO_PI = 2.0 * Math.PI,
-      M_HALF_PI = Math.PI / 2.0,
-      N_LAT = 24,
-      N_LON = 12;
-
-  var points = [];
-  var faces = [];
-
-  for (var i=0; i<12; i++) {
-    for (var j=0; j<24; j++) {
-      points.push([
-        Math.sin(Math.PI * i/12) * Math.cos(M_TWO_PI * j/24),
-        Math.sin(Math.PI * i/12) * Math.sin(M_TWO_PI * j/24),
-        Math.cos(Math.PI * i/12)
-      ]);
-      if (points.length > 25) {
-        var idx = points.length-1;
-        faces.push([
-          idx-25,
-          idx-24,
-          idx
-        ]);
-        faces.push([
-          idx-25,
-          idx,
-          idx-1
-        ]);
+  var mesh = {
+    primitive: {
+      type: "sphere",
+      radius: options.size,
+      lat: 24,
+      lon: 24,
+      material: {
+         // color: [80/255, 200/255, 120/255],
+         // specular:[1,1,1],
+         // shininess: 0.9,
+         // env_amount: 1.0,
+        textures: {
+          color: '/images/rygb_256.png'
+          // color: "/images/cubicvr_js/2576-diffuse.jpg",
+          // normal: "/images/cubicvr_js/2576-normal.jpg",
+          // bump: "/images/cubicvr_js/2576-bump.jpg",
+          // envsphere: "/images/cubicvr_js/fract_reflections.jpg"
+        }
+      },
+      uv: {
+        projectionMode: "spherical",
+        projectionAxis: "y",
+        wrapW: 5,
+        wrapH: 2.5
       }
-    }
-  }
-
-  var uv = [];
-  for (var i=0; i< faces.length; i++) {
-    uv.push([ [1, 0], [0, 0], [0, 1] ]);
-  }
-
-  var mesh =
-  {
-    points: points,
-    faces: faces,
-    uv: uv,
-    uvmapper: {
-      projectionMode: "spherical",
-      projectionAxis: "y",
-      wrapW: 5,
-      wrapH: 2.5
-    }
+    },
+    compile: true
   };
 
   return mesh;
