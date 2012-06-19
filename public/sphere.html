@@ -86,7 +86,7 @@ require(['gladius-core', 'gladius-cubicvr'],
     ));
     space.add( new engine.simulation.Entity( "light-marker",
       [
-        new engine.core.Transform( [3, 0, 0], [0, 0, 0], [0.1, 0.1, 0.1] ),
+        new engine.core.Transform( [3, 0, 0], [45, 0, 0], [0.2, 0.2, 0.2] ),
         new cubicvr.Model( resources.mesh, resources.material )
       ]
     ));
@@ -112,7 +112,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       space.findNamed( "cube" ).findComponent( "Transform" ).setRotation( cubeRotation );
 
       var lightRotation = new engine.math.Vector3( space.findNamed( "light-center" ).findComponent( "Transform" ).rotation );
-      lightRotation = engine.math.vector3.add( lightRotation, [0, space.clock.delta * 0.001, 0] );
+      lightRotation = engine.math.vector3.add( lightRotation, [0, 0, space.clock.delta * 0.001] );
       space.findNamed( "light-center" ).findComponent( "Transform" ).setRotation( lightRotation );
     }, {
       tags: ["@update"]
