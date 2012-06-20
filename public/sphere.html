@@ -64,34 +64,40 @@ require(['gladius-core', 'gladius-cubicvr'],
     var space = new engine.simulation.Space();
     var cubicvr = engine.findExtension( "gladius-cubicvr" );
 
+    var lightDefinition = new cubicvr.LightDefinition({
+      intensity: 20,
+      distance: 20,
+      light_type: cubicvr.LightDefinition.LightTypes.POINT,
+      method: cubicvr.LightDefinition.LightingMethods.DYNAMIC
+    })
+
     space.add( new engine.simulation.Entity( "camera",
       [
         new engine.core.Transform( [0, 0, 0] ),
         new cubicvr.Camera({
           targeted: true
         }),
-        new cubicvr.Light()
+        new cubicvr.Light( lightDefinition )
       ]
     ));
     space.add( new engine.simulation.Entity( "moon-center-of-mass",
       [
-        new engine.core.Transform( [0, 0, 6], [engine.math.TAU, engine.math.TAU, engine.math.TAU] )
+        new engine.core.Transform( [0, 0, 20], [engine.math.TAU, engine.math.TAU, engine.math.TAU] )
       ]
     ));
     var planet = new engine.simulation.Entity( "planet",
       [
-        new engine.core.Transform( [0, 0, 6], [0, 0,0], [1,1,1] ),
+        new engine.core.Transform( [0, 0, 20], [0, 0,0], [1,1,1] ),
         new cubicvr.Model( resources.mesh, resources.material )
       ]
     );
     space.add( new engine.simulation.Entity( "moon",
       [
-        new engine.core.Transform( [3, 0, 0], [0,0,0], [.2,.2,.2]),
+        new engine.core.Transform( [10, 0, 0], [0,0,0], [.4,.4,.4]),
         new cubicvr.Model( resources.mesh, resources.material )
       ]
     ));
     space.add( planet );
-
     space.findNamed( "moon" ).setParent( space.findNamed( "moon-center-of-mass" ) );
 
     var task = new engine.FunctionTask( function() {
