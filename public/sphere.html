@@ -64,12 +64,6 @@ require(['gladius-core', 'gladius-cubicvr'],
     var space = new engine.simulation.Space();
     var cubicvr = engine.findExtension( "gladius-cubicvr" );
 
-    var lightDefinition = new cubicvr.LightDefinition({
-      intensity: 2,
-      light_type: cubicvr.LightDefinition.LightTypes.POINT,
-      method: cubicvr.LightDefinition.LightingMethods.DYNAMIC
-    })
-
     space.add( new engine.simulation.Entity( "camera",
       [
         new engine.core.Transform( [0, 0, 0] ),
@@ -79,41 +73,35 @@ require(['gladius-core', 'gladius-cubicvr'],
         new cubicvr.Light()
       ]
     ));
-    space.add( new engine.simulation.Entity( "light-center",
+    space.add( new engine.simulation.Entity( "moon-center-of-mass",
       [
-        new engine.core.Transform( [0, 0, 5], [engine.math.TAU, engine.math.TAU, engine.math.TAU] )
+        new engine.core.Transform( [0, 0, 6], [engine.math.TAU, engine.math.TAU, engine.math.TAU] )
       ]
     ));
-    space.add( new engine.simulation.Entity( "light-marker",
+    var planet = new engine.simulation.Entity( "planet",
       [
-        new engine.core.Transform( [3, 0, 0], [45, 0, 0], [0.2, 0.2, 0.2] ),
-        new cubicvr.Model( resources.mesh, resources.material )
-      ]
-    ));
-    space.add( new engine.simulation.Entity( "light-source",
-      [
-        new engine.core.Transform( [3, 0, 0], [0, 0, 0], [1, 1, 1] ),
-        new cubicvr.Light( lightDefinition )
-      ]
-    ));
-    var parentCube = new engine.simulation.Entity( "cube",
-      [
-        new engine.core.Transform( [0, 0, 6], [0, -engine.math.TAU/8, engine.math.TAU/8] ),
+        new engine.core.Transform( [0, 0, 6], [0, 0,0], [1,1,1] ),
         new cubicvr.Model( resources.mesh, resources.material )
       ]
     );
-    space.add( parentCube );
-    space.findNamed( "light-source" ).setParent( space.findNamed( "light-center" ) );
-    space.findNamed( "light-marker" ).setParent( space.findNamed( "light-center" ) );
+    space.add( new engine.simulation.Entity( "moon",
+      [
+        new engine.core.Transform( [3, 0, 0], [0,0,0], [.2,.2,.2]),
+        new cubicvr.Model( resources.mesh, resources.material )
+      ]
+    ));
+    space.add( planet );
+
+    space.findNamed( "moon" ).setParent( space.findNamed( "moon-center-of-mass" ) );
 
     var task = new engine.FunctionTask( function() {
-      var cubeRotation = new engine.math.Vector3( space.findNamed( "cube" ).findComponent( "Transform" ).rotation );
+      var cubeRotation = new engine.math.Vector3( space.findNamed( "planet" ).findComponent( "Transform" ).rotation );
       cubeRotation = engine.math.vector3.add( cubeRotation, [space.clock.delta * 0.003, space.clock.delta * 0.001, space.clock.delta * 0.0007] );
-      space.findNamed( "cube" ).findComponent( "Transform" ).setRotation( cubeRotation );
+      space.findNamed( "planet" ).findComponent( "Transform" ).setRotation( cubeRotation );
 
-      var lightRotation = new engine.math.Vector3( space.findNamed( "light-center" ).findComponent( "Transform" ).rotation );
+      var lightRotation = new engine.math.Vector3( space.findNamed( "moon-center-of-mass" ).findComponent( "Transform" ).rotation );
       lightRotation = engine.math.vector3.add( lightRotation, [0, 0, space.clock.delta * 0.001] );
-      space.findNamed( "light-center" ).findComponent( "Transform" ).setRotation( lightRotation );
+      space.findNamed( "moon-center-of-mass" ).findComponent( "Transform" ).setRotation( lightRotation );
     }, {
       tags: ["@update"]
     });
