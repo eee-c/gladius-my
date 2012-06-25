@@ -17,7 +17,11 @@
           diffuse:[1,1,1],
           specular:[1,1,1],
           position:[0,5,2],
-          distance:20
+      intensity: 5,
+      distance: 300,
+
+          direction: [0, 0, 0],
+          distance:20,
         });
 
         scene.bind(light);
@@ -56,6 +60,9 @@
         // set initial camera position and target
         scene.camera.position = [0, 0, 2];
         scene.camera.target = [0, 0, 0];
+
+
+                    scene.lights[0].lookat([0,0,0]);
 
         // initialize a mouse view controller
         mvc = new CubicVR.MouseViewController(canvas, scene.camera);
