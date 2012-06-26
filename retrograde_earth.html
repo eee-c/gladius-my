@@ -194,7 +194,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       // frame of reference for constellation # i
       space.add( new engine.simulation.Entity( "constellation-frame-" + i,
          [
-           new engine.core.Transform( [0, 0, 12], [0, 0, (i/8)*2*Math.PI] )
+           new engine.core.Transform( [0, 0, 20], [0, 0, (i/8)*2*Math.PI] )
         ]
       ));
 
@@ -202,7 +202,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       space.add( new engine.simulation.Entity(
         "constellation-" + i,
         [
-          new engine.core.Transform( [20, 0, 0], [0,Math.PI/2,0], [1,1,1]),
+          new engine.core.Transform( [12, 0, 0], [0,Math.PI/2,0], [1,1,1]),
           new cubicvr.Model( resources.constellation_mesh, resources.constellation_material )
         ],
         [],
