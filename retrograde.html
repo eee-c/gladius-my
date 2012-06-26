@@ -36,7 +36,7 @@ require(['gladius-core', 'gladius-cubicvr'],
     [
       {
         type: engine["gladius-cubicvr"].Mesh,
-        url: '../assets/procedural-sphere-mesh.js?size=0.9',
+        url: 'assets/procedural-sphere-mesh.js?size=0.9',
         load: engine.loaders.procedural,
         onsuccess: function( mesh ) {
           resources.mesh = mesh;
@@ -46,7 +46,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       },
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/procedural-material.js',
+        url: 'assets/procedural-material.js',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.material = material;
@@ -56,7 +56,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       },
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/rgb-material.js?r=204&g=140',
+        url: 'assets/rgb-material.js?r=204&g=140',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.sun_material = material;
@@ -66,7 +66,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       },
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/rgb-material.js?b=255',
+        url: 'assets/rgb-material.js?b=255',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.earth_material = material;
@@ -76,7 +76,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       },
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/rgb-material.js?r=204',
+        url: 'assets/rgb-material.js?r=204',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.mars_material = material;
@@ -88,7 +88,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       // line between Earth and Mars
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/rgb-material.js?r=255&g=255',
+        url: 'assets/rgb-material.js?r=255&g=255',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.line_material = material;
@@ -98,7 +98,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       },
       {
         type: engine["gladius-cubicvr"].Mesh,
-        url: '../assets/procedural-line-mesh.js',
+        url: 'assets/procedural-line-mesh.js',
         load: engine.loaders.procedural,
         onsuccess: function( mesh ) {
           resources.line_mesh = mesh;
@@ -111,7 +111,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       // constelations
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/rgb-material.js?g=255',
+        url: 'assets/rgb-material.js?g=255',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.constellation_material = material;
@@ -121,7 +121,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       },
       {
         type: engine["gladius-cubicvr"].Mesh,
-        url: '../assets/procedural-planar-mesh.js',
+        url: 'assets/procedural-planar-mesh.js',
         load: engine.loaders.procedural,
         onsuccess: function( mesh ) {
           resources.constellation_mesh = mesh;

@@ -36,7 +36,7 @@ require(['gladius-core', 'gladius-cubicvr'],
     [
       {
         type: engine["gladius-cubicvr"].Mesh,
-        url: '../assets/procedural-mesh.js?size=2',
+        url: 'assets/procedural-mesh.js?size=2',
         load: engine.loaders.procedural,
         onsuccess: function( mesh ) {
           resources.mesh = mesh;
@@ -46,7 +46,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       },
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/procedural-material.js',
+        url: 'assets/procedural-material.js',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.material = material;

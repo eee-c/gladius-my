@@ -27,7 +27,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
     [
       {
         type: engine["gladius-cubicvr"].Mesh,
-        url: '../assets/procedural-mesh.js',
+        url: 'assets/procedural-mesh.js',
         load: engine.loaders.procedural,
         onsuccess: function( mesh ) {
           resources.mesh = mesh;
@@ -37,7 +37,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       },
       {
         type: engine["gladius-cubicvr"].MaterialDefinition,
-        url: '../assets/procedural-material.js',
+        url: 'assets/procedural-material.js',
         load: engine.loaders.procedural,
         onsuccess: function( material ) {
           resources.material = material;
