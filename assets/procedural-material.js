@@ -6,9 +6,9 @@ function proc( options ) {
     env_amount: 1.0,
     opacity: 1.0,
     textures: {
-      color: '/images/rygb_256.png',
-      normal: "/images/cubicvr_js/2576-normal.jpg",
-      bump: "/images/cubicvr_js/2576-bump.jpg",
+      color: 'images/rygb_256.png',
+      normal: "images/cubicvr_js/2576-normal.jpg",
+      bump: "images/cubicvr_js/2576-bump.jpg",
       // normal: "/images/line_normal.png",
       // bump: "/images/line_bump.png",
       // normal: "/images/crater_normal_map.png",
