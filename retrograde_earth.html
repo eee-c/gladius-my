@@ -141,14 +141,14 @@ require(['gladius-core', 'gladius-cubicvr'],
     var earthDistance = 5
       , marsDistance = earthDistance * 1.5;
 
-    space.add( new engine.simulation.Entity( "camera",
+    space.add( new engine.simulation.Entity( "camera1",
       [
         new engine.core.Transform( [0, 0, 0] ),
         new cubicvr.Camera({
-          targeted: false,
+          targeted: true,
           fov: 75
         }),
-//        new cubicvr.Light()
+        new cubicvr.Light()
       ]
     ));
 
@@ -202,7 +202,7 @@ require(['gladius-core', 'gladius-cubicvr'],
       space.add( new engine.simulation.Entity(
         "constellation-" + i,
         [
-          new engine.core.Transform( [12, 0, 0], [0,Math.PI/2,0], [1,1,1]),
+          new engine.core.Transform( [12, 0, 0], [0,5*Math.PI/8,0], [1,1,1]),
           new cubicvr.Model( resources.constellation_mesh, resources.constellation_material )
         ],
         [],
@@ -216,7 +216,7 @@ require(['gladius-core', 'gladius-cubicvr'],
         new cubicvr.Light(
           new cubicvr.LightDefinition({
             intensity: 3,
-            distance: 30
+            distance: 50
           })
         )
       ]
@@ -238,23 +238,16 @@ require(['gladius-core', 'gladius-cubicvr'],
     space.findNamed( "mars" ).setParent( space.findNamed( "mars-center-of-mass" ) );
     space.findNamed( "earth" ).setParent( space.findNamed( "earth-center-of-mass" ) );
 
-    space.
-      findNamed( "camera" ).
-      setParent( space.findNamed( "earth" ) );
-
-    space.
-      findNamed( "camera" ).
-      findComponent("Transform").setRotation([3*Math.PI/2, 0, Math.PI/2]);
-
-    space.
-      findNamed( "camera" ).
-      findComponent( "Transform" ).
-      setPosition( [-20, 0, -8] );
-
+    space.add( new engine.simulation.Entity( "camera2",
+      [
+        new engine.core.Transform( [-100, 0, -25], [3*Math.PI/2, 0, Math.PI/2]),
+        new cubicvr.Camera({fov: 10.0}),
+      ],
+      ['@transform', '@camera', '@light'],
+      space.findNamed( "earth" )
+    ));
 
     var line_of_sight = space.findNamed( "earth-mars-line-of-sight" );
-    //line_of_sight.setParent( space.findNamed( "earth" ) );
-    //line_of_sight.findComponent("Transform").setRotation([0, 0, Math.PI/2]);
 
     var task = new engine.FunctionTask( function() {
       var cubeRotation = new engine.math.Vector3( space.findNamed( "sun" ).findComponent( "Transform" ).rotation );
