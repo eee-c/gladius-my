@@ -152,6 +152,12 @@ require(['gladius-core', 'gladius-cubicvr'],
       ]
     ));
 
+    space.findNamed( "camera1" ).setActive(false);
+    var thing = space.findNamed( "camera1" ).removeComponent("Camera");
+    console.log(space.findAllWith( "Camera" ));
+    console.log(thing);
+    space.findNamed( "camera1" ).addComponent(thing);
+
     var sun = new engine.simulation.Entity( "sun",
       [
         new engine.core.Transform( [0, 0, 20], [0, 0,0], [.5,.5,.5] ),
