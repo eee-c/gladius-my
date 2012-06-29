@@ -151,12 +151,6 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       ]
     ));
 
-    space.findNamed( "camera1" ).setActive(false);
-    var thing = space.findNamed( "camera1" ).removeComponent("Camera");
-    console.log(space.findAllWith( "Camera" ));
-    console.log(thing);
-    space.findNamed( "camera1" ).addComponent(thing);
-
     var sun = new engine.simulation.Entity( "sun",
       [
         new engine.core.Transform( [0, 0, 20], [0, 0,0], [.5,.5,.5] ),
@@ -252,11 +246,47 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       space.findNamed( "earth" )
     ));
 
-    console.log(Object.getPrototypeOf(space));
+    // space.findNamed( "camera1" ).setActive(false);
+    // var camera = space.findNamed( "camera1" ).removeComponent("Camera");
+    // console.log(space.findAllWith( "Camera" ));
+    // console.log(thing);
+    // space.findNamed( "camera1" ).addComponent(thing);
+
+    var spacePrototype = Object.getPrototypeOf(space);
+
+    spacePrototype._deactivateAllCameras = function() {
+      if (typeof(this._inactive_cameras) == "undefined") {
+        this._inactive_cameras = {};
+      }
+
+      var all_cameras = this.findAllWith("Camera");
+      for (var i=0; i<all_cameras.length; i++) {
+        var name = all_cameras[i].name;
+        this._inactive_cameras[name] = all_cameras[i].removeComponent("Camera");
+      }
+    };
+
+    spacePrototype.setCamera = function(camera_name) {
+      this._deactivateAllCameras();
+
+      var camera_entity = this.findNamed(camera_name);
+
+      camera_entity.addComponent(this._inactive_cameras[camera_name]);
+
+      this.camera = camera_entity;
+
+      delete this._inactive_cameras[camera_name];
+    };
+
+    space.setCamera("camera1");
 
     var line_of_sight = space.findNamed( "earth-mars-line-of-sight" );
 
     var task = new engine.FunctionTask( function() {
+      if (Math.round(space.clock.time) % 240 == 0) {
+        space.setCamera(space.camera.name == "camera1" ? "camera2" : "camera1");
+      }
+
       var cubeRotation = new engine.math.Vector3( space.findNamed( "sun" ).findComponent( "Transform" ).rotation );
       cubeRotation = engine.math.vector3.add( cubeRotation, [space.clock.delta * 0.003, space.clock.delta * 0.001, space.clock.delta * 0.0007] );
       space.findNamed( "sun" ).findComponent( "Transform" ).setRotation( cubeRotation );
