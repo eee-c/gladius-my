@@ -239,18 +239,10 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
     space.add( new engine.simulation.Entity( "camera2",
       [
-        new engine.core.Transform( [-100, 0, -25], [3*Math.PI/2, 0, Math.PI/2]),
-        new cubicvr.Camera({fov: 10.0})
-      ],
-      ['@transform', '@camera', '@light'],
-      space.findNamed( "earth" )
+        new engine.core.Transform( [0, 0, 0]),
+        new cubicvr.Camera({targeted: false})
+      ]
     ));
-
-    // space.findNamed( "camera1" ).setActive(false);
-    // var camera = space.findNamed( "camera1" ).removeComponent("Camera");
-    // console.log(space.findAllWith( "Camera" ));
-    // console.log(thing);
-    // space.findNamed( "camera1" ).addComponent(thing);
 
     var spacePrototype = Object.getPrototypeOf(space);
 
@@ -278,7 +270,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       delete this._inactive_cameras[camera_name];
     };
 
-    space.setCamera("camera1");
+    space.setCamera("camera2");
 
     var line_of_sight = space.findNamed( "earth-mars-line-of-sight" );
 
@@ -309,7 +301,17 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 //      console.log("x: " + x_diff);
 //      console.log("y: " + y_diff);
       var angle = Math.atan2(x_diff, y_diff);
-      //console.log(angle);
+      // console.log(angle);
+
+      space.
+        findNamed("camera2").
+        findComponent("Transform").
+        setPosition([earthX, earthY, 19.5]);
+
+      space.
+        findNamed("camera2").
+        findComponent("Transform").
+        setRotation([3*Math.PI/2, 0, Math.PI -angle]);
 
       line_of_sight.
         findComponent( "Transform" ).
