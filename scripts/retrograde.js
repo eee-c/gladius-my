@@ -140,51 +140,44 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
     var earthDistance = 5
       , marsDistance = earthDistance * 1.5;
 
-    space.add( new engine.simulation.Entity( "camera1",
-      [
-        new engine.core.Transform( [0, 0, 0] ),
-        new cubicvr.Camera({
-          targeted: true,
-          fov: 75
-        }),
-        new cubicvr.Light()
-      ]
-    ));
-
     var sun = new engine.simulation.Entity( "sun",
       [
-        new engine.core.Transform( [0, 0, 20], [0, 0,0], [.5,.5,.5] ),
+        new engine.core.Transform(),
         new cubicvr.Model( resources.mesh, resources.sun_material )
       ]
     );
 
-    space.add( new engine.simulation.Entity( "mars-center-of-mass",
+    space.add( new engine.simulation.Entity( "mars-orbital-center",
       [
-        new engine.core.Transform( [0, 0, 20], [engine.math.TAU, engine.math.TAU, engine.math.TAU] )
+        new engine.core.Transform()
       ]
     ));
     space.add( new engine.simulation.Entity( "mars",
       [
         new engine.core.Transform( [marsDistance, 0, 0], [0,0,0], [.2,.2,.2]),
         new cubicvr.Model( resources.mesh, resources.mars_material )
-      ]
+      ],
+      [],
+      space.findNamed( "mars-orbital-center" )
     ));
 
-    space.add( new engine.simulation.Entity( "earth-center-of-mass",
+    space.add( new engine.simulation.Entity( "earth-orbital-center",
       [
-        new engine.core.Transform( [0, 0, 20], [engine.math.TAU, engine.math.TAU, engine.math.TAU] )
+        new engine.core.Transform()
       ]
     ));
     space.add( new engine.simulation.Entity( "earth",
       [
         new engine.core.Transform( [earthDistance, 0, 0], [0,0,0], [.3,.3,.3]),
         new cubicvr.Model( resources.mesh, resources.earth_material )
-      ]
+      ],
+      [],
+      space.findNamed( "earth-orbital-center")
     ));
 
     space.add( new engine.simulation.Entity( "earth-mars-line-of-sight",
       [
-        new engine.core.Transform( [0, 0, 20], [0,0,0], [1,1,1]),
+        new engine.core.Transform(),
         new cubicvr.Model( resources.line_mesh, resources.line_material )
       ]
     ));
@@ -192,8 +185,8 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
     for (var i=0; i<8; i++) {
       // frame of reference for constellation # i
       space.add( new engine.simulation.Entity( "constellation-frame-" + i,
-         [
-           new engine.core.Transform( [0, 0, 20], [0, 0, (i/8)*2*Math.PI] )
+        [
+          new engine.core.Transform( [0, 0, 0], [0, 0, (i/8)*2*Math.PI] )
         ]
       ));
 
@@ -211,7 +204,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
     space.add( new engine.simulation.Entity( "sun-light",
       [
-        new engine.core.Transform( [0, 0, 20], [0, 0, 0], [1, 1, 1] ),
+        new engine.core.Transform(),
         new cubicvr.Light(
           new cubicvr.LightDefinition({
             intensity: 3,
@@ -223,7 +216,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
     space.add( new engine.simulation.Entity( "sun-glow",
       [
-        new engine.core.Transform( [0, 0, 18], [0, 0, 0], [1, 1, 1] ),
+        new engine.core.Transform( [0, 0, -2] ),
         new cubicvr.Light(
           new cubicvr.LightDefinition({
             intensity: 3,
@@ -234,8 +227,15 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
     ));
 
     space.add( sun );
-    space.findNamed( "mars" ).setParent( space.findNamed( "mars-center-of-mass" ) );
-    space.findNamed( "earth" ).setParent( space.findNamed( "earth-center-of-mass" ) );
+
+
+    space.add( new engine.simulation.Entity( "camera1",
+      [
+        new engine.core.Transform([0,0,-23], [Math.PI, 0, 0]),
+        new cubicvr.Camera()
+      ]
+    ));
+
 
     space.add( new engine.simulation.Entity( "camera2",
       [
@@ -283,13 +283,13 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       cubeRotation = engine.math.vector3.add( cubeRotation, [space.clock.delta * 0.003, space.clock.delta * 0.001, space.clock.delta * 0.0007] );
       space.findNamed( "sun" ).findComponent( "Transform" ).setRotation( cubeRotation );
 
-      var marsRevolution = new engine.math.Vector3( space.findNamed( "mars-center-of-mass" ).findComponent( "Transform" ).rotation );
+      var marsRevolution = new engine.math.Vector3( space.findNamed( "mars-orbital-center" ).findComponent( "Transform" ).rotation );
       marsRevolution = engine.math.vector3.add( marsRevolution, [0, 0, -space.clock.delta * 0.0002] );
-      space.findNamed( "mars-center-of-mass" ).findComponent( "Transform" ).setRotation( marsRevolution );
+      space.findNamed( "mars-orbital-center" ).findComponent( "Transform" ).setRotation( marsRevolution );
 
-      var earthRevolution = new engine.math.Vector3( space.findNamed( "earth-center-of-mass" ).findComponent( "Transform" ).rotation );
+      var earthRevolution = new engine.math.Vector3( space.findNamed( "earth-orbital-center" ).findComponent( "Transform" ).rotation );
       earthRevolution = engine.math.vector3.add( earthRevolution, [0, 0, -space.clock.delta * 0.0010] );
-      space.findNamed( "earth-center-of-mass" ).findComponent( "Transform" ).setRotation( earthRevolution );
+      space.findNamed( "earth-orbital-center" ).findComponent( "Transform" ).setRotation( earthRevolution );
 
       var earthX = Math.cos(earthRevolution[2]) * earthDistance
         , earthY = Math.sin(earthRevolution[2]) * earthDistance
@@ -298,15 +298,12 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
         , y_diff = marsY - earthY
         , x_diff = marsX - earthX;
 
-//      console.log("x: " + x_diff);
-//      console.log("y: " + y_diff);
       var angle = Math.atan2(x_diff, y_diff);
-      // console.log(angle);
 
       space.
         findNamed("camera2").
         findComponent("Transform").
-        setPosition([earthX, earthY, 19.5]);
+        setPosition([earthX, earthY, -0.5]);
 
       space.
         findNamed("camera2").
@@ -319,7 +316,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
       line_of_sight.
         findComponent( "Transform" ).
-        setPosition( [earthX + 25*Math.sin(angle), earthY + 25*Math.cos(angle), 20] );
+        setPosition( [earthX + 25*Math.sin(angle), earthY + 25*Math.cos(angle), 0] );
 
     }, {
       tags: ["@update"]
