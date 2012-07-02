@@ -270,18 +270,14 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       delete this._inactive_cameras[camera_name];
     };
 
-    space.setCamera("camera2");
+    space.setCamera("camera1");
 
     var line_of_sight = space.findNamed( "earth-mars-line-of-sight" );
 
     var task = new engine.FunctionTask( function() {
-      if (Math.round(space.clock.time) % 240 == 0) {
-        space.setCamera(space.camera.name == "camera1" ? "camera2" : "camera1");
-      }
-
-      var cubeRotation = new engine.math.Vector3( space.findNamed( "sun" ).findComponent( "Transform" ).rotation );
-      cubeRotation = engine.math.vector3.add( cubeRotation, [space.clock.delta * 0.003, space.clock.delta * 0.001, space.clock.delta * 0.0007] );
-      space.findNamed( "sun" ).findComponent( "Transform" ).setRotation( cubeRotation );
+      var sunRotation = new engine.math.Vector3( space.findNamed( "sun" ).findComponent( "Transform" ).rotation );
+      sunRotation = engine.math.vector3.add( sunRotation, [space.clock.delta * 0.003, space.clock.delta * 0.001, space.clock.delta * 0.0007] );
+      space.findNamed( "sun" ).findComponent( "Transform" ).setRotation( sunRotation );
 
       var marsRevolution = new engine.math.Vector3( space.findNamed( "mars-orbital-center" ).findComponent( "Transform" ).rotation );
       marsRevolution = engine.math.vector3.add( marsRevolution, [0, 0, -space.clock.delta * 0.0002] );
@@ -322,6 +318,27 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       tags: ["@update"]
     });
     task.start();
+
+    document.addEventListener("keydown", function(event) {
+      var code = event.which || event.keyCode;
+      if (code == 0x31) { // 1
+        space.setCamera("camera1");
+      }
+      else if (code == 0x32) { // 2
+        space.setCamera("camera2");
+      }
+      else if (code == 0x50) { // p
+        if (task.isStarted()) {
+          task.pause();
+        }
+        else {
+          task.start();
+        }
+      }
+      else {
+        console.log(code);
+      }
+    });
 
     engine.resume();
   }
