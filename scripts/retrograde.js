@@ -135,24 +135,24 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
   });
 
   function game( engine, resources ) {
-    var space = new engine.simulation.Space();
+    var space = new engine.SimulationSpace();
     var cubicvr = engine.findExtension( "gladius-cubicvr" );
     var earthDistance = 5
       , marsDistance = earthDistance * 1.5;
 
-    var sun = new engine.simulation.Entity( "sun",
+    var sun = new engine.Entity( "sun",
       [
         new engine.core.Transform(),
         new cubicvr.Model( resources.mesh, resources.sun_material )
       ]
     );
 
-    space.add( new engine.simulation.Entity( "mars-orbital-center",
+    space.add( new engine.Entity( "mars-orbital-center",
       [
         new engine.core.Transform()
       ]
     ));
-    space.add( new engine.simulation.Entity( "mars",
+    space.add( new engine.Entity( "mars",
       [
         new engine.core.Transform( [marsDistance, 0, 0], [0,0,0], [.2,.2,.2]),
         new cubicvr.Model( resources.mesh, resources.mars_material )
@@ -161,12 +161,12 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       space.findNamed( "mars-orbital-center" )
     ));
 
-    space.add( new engine.simulation.Entity( "earth-orbital-center",
+    space.add( new engine.Entity( "earth-orbital-center",
       [
         new engine.core.Transform()
       ]
     ));
-    space.add( new engine.simulation.Entity( "earth",
+    space.add( new engine.Entity( "earth",
       [
         new engine.core.Transform( [earthDistance, 0, 0], [0,0,0], [.3,.3,.3]),
         new cubicvr.Model( resources.mesh, resources.earth_material )
@@ -175,7 +175,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       space.findNamed( "earth-orbital-center")
     ));
 
-    space.add( new engine.simulation.Entity( "earth-mars-line-of-sight",
+    space.add( new engine.Entity( "earth-mars-line-of-sight",
       [
         new engine.core.Transform(),
         new cubicvr.Model( resources.line_mesh, resources.line_material )
@@ -184,14 +184,14 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
     for (var i=0; i<8; i++) {
       // frame of reference for constellation # i
-      space.add( new engine.simulation.Entity( "constellation-frame-" + i,
+      space.add( new engine.Entity( "constellation-frame-" + i,
         [
           new engine.core.Transform( [0, 0, 0], [0, 0, (i/8)*2*Math.PI] )
         ]
       ));
 
       // add constellation # i to space with frame of reference as parent
-      space.add( new engine.simulation.Entity(
+      space.add( new engine.Entity(
         "constellation-" + i,
         [
           new engine.core.Transform( [12, 0, 0], [0,5*Math.PI/8,0], [1,1,1]),
@@ -202,7 +202,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       ));
     }
 
-    space.add( new engine.simulation.Entity( "sun-light",
+    space.add( new engine.Entity( "sun-light",
       [
         new engine.core.Transform(),
         new cubicvr.Light(
@@ -214,7 +214,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
       ]
     ));
 
-    space.add( new engine.simulation.Entity( "sun-glow",
+    space.add( new engine.Entity( "sun-glow",
       [
         new engine.core.Transform( [0, 0, -2] ),
         new cubicvr.Light(
@@ -228,8 +228,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
     space.add( sun );
 
-
-    space.add( new engine.simulation.Entity( "camera1",
+    space.add( new engine.Entity( "camera1",
       [
         new engine.core.Transform([0,0,-23], [Math.PI, 0, 0]),
         new cubicvr.Camera()
@@ -237,7 +236,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
     ));
 
 
-    space.add( new engine.simulation.Entity( "camera2",
+    space.add( new engine.Entity( "camera2",
       [
         new engine.core.Transform( [0, 0, 0]),
         new cubicvr.Camera({targeted: false})

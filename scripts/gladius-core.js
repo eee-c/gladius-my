@@ -1870,9 +1870,9 @@ define('matrix/matrix4',['require','./matrix','../vector/vector3'],function ( re
             multiplyVector3: function( m, v, result ) {
                 result = result || vector3.$();
                 
-                result[0] = m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12];
-                result[1] = m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13];
-                result[2] = m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14];
+                result[0] = m[0] * v[0] + m[2] * v[1] + m[3] * v[2];
+                result[1] = m[4] * v[0] + m[5] * v[1] + m[6] * v[2];
+                result[2] = m[8] * v[0] + m[9] * v[1] + m[10] * v[2];
 
                 return result;
             },
@@ -2492,38 +2492,39 @@ define('core/clock',['require','common/multicast-delegate'],function( require ) 
     this._clockState = undefined;
     this.signal = new MulticastDelegate();
     this._delegate = delegate || null;
+
+    this._delegateHandler = this.update.bind( this );
+    if( this._delegate ) {
+      this._delegate.subscribe( this._delegateHandler );
+    }
+
+    this._stepCount = 0;
     
     this.start();
   };
   
   function pause() {
     this._clockState = C_PAUSED;
-    if( this._delegate ) {
-      this._delegate.unsubscribe( this.update.bind( this ) );
-    }
   }
   
   function start() {
     this._clockState = C_STARTED;
-    if( this._delegate ) {
-      this._delegate.subscribe( this.update.bind( this ) );
-    }
   }
   
   function update( delta ) {
     if( C_PAUSED !== this._clockState ) {
       this.delta = delta * this._timeScale;
-      this.time += this.delta;
-      this.signal( this.delta ); // Dispatch time signal
+    } else {
+      this.delta = this._stepCount * this._idealFrameInterval * this._timeScale;
+      this._stepCount = 0;
     }
+    this.time += this.delta;
+    this.signal( this.delta ); // Dispatch time signal
   }
   
   function step( count ) {
-    count = undefined === count ? 1 : count;
     if( C_PAUSED === this._clockState ) {
-      this.delta = count * this._idealFrameInterval * this._timeScale;
-      this.time += this.delta;
-      this.signal( this.delta );  // Dispatch time signal
+      this._stepCount += (undefined === count) ? 1 : count;
     }
   }
   
@@ -2531,9 +2532,14 @@ define('core/clock',['require','common/multicast-delegate'],function( require ) 
     return this._clockState === C_STARTED;
   }
   
-  function reset() {
+  function reset( delegate ) {
+    if( delegate && delegate != this._delegate ) {
+      this._delegate.unsubscribe( this._delegateHandler );  
+      this._delegate = delegate || null;
+      this._delegate.subscribe( this._delegateHandler );
+    }
     this.time = 0;
-    this.delta = 0;
+    this.delta = 0;    
   }
   
   function setTimeScale( scale ) {
@@ -4283,7 +4289,7 @@ define('core/entity',['require','common/guid','core/event'],function( require ) 
       if (this.validateDependencies.call(this, components)){
         var i, l;
         for ( i = 0, l = components.length; i < l; ++ i){
-          this.addComponent.call(this, components[i]);
+          this.addComponent.call(this, components[i], true);
         }
       }else{
         throw new Error( "required component missing" );
@@ -4295,8 +4301,8 @@ define('core/entity',['require','common/guid','core/event'],function( require ) 
     }
   };
 
-  function addComponent( component ) {
-    if (this.validateDependencies.call(this, component)){
+  function addComponent( component, force ) {
+    if (force || this.validateDependencies.call(this, component)){
       var previous = this.removeComponent( component.type );
       component.setOwner( this );
       this._components[component.type] = component;
@@ -4837,7 +4843,154 @@ if ( typeof define !== "function" ) {
   var define = require( "amdefine" )( module );
 }
 
-define('core/engine',['require','_math','common/multicast-delegate','core/request-animation-frame-loop','core/clock','core/dependency-scheduler','core/function-task','core/timer','core/event','core/get','core/loaders/default','core/loaders/procedural','base/component','base/service','base/extension','core/space','core/entity','core/components/transform','core/resources/script'],function ( require ) {
+define('core/services/updater',['require','base/service','core/event'],function ( require ) {
+
+  var Service = require( "base/service" );
+  var Event = require( "core/event" );
+
+  var Updater = function( scheduler, options ) {
+    options = options || {};
+    
+    var schedules = {
+        "update": {
+          tags: ["@update", "logic"],
+          dependsOn: ["physics"]
+        }
+    };
+    Service.call( this, scheduler, schedules );
+  };
+
+  function update() {
+    var registeredComponents = this._registeredComponents;
+
+    // Update all logic components
+    var component;
+    var updateEvent = new Event( 'Update', false );
+    for( var componentType in registeredComponents ) {
+      for( var entityId in registeredComponents[componentType] ) {
+        component = registeredComponents[componentType][entityId];
+        while( component.handleQueuedEvent() ) {}
+        updateEvent.dispatch( component );
+      }
+    }
+  }
+
+  Updater.prototype = new Service();
+  Updater.prototype.constructor = Updater;
+  Updater.prototype.update = update;
+
+  return Updater;
+
+});
+if ( typeof define !== "function" ) {
+  var define = require( "amdefine" )( module );
+}
+
+define('core/components/actor',['require','base/component','common/extend'],function( require ) {
+
+  var Component = require( "base/component" );
+  var extend = require( "common/extend" );
+
+  var Actor = function( service, eventMap ) {
+    Component.call( this, "Logic", service, [] );
+
+    eventMap = eventMap || {};
+
+    // Set up event handlers
+    var i, l;
+    var eventNames = Object.keys( eventMap );
+    for( i = 0, l = eventNames.length; i < l; ++ i ) {
+      var eventName = eventNames[i];
+      this["on" + eventName] = eventMap[eventName];
+    }
+  };
+  Actor.prototype = new Component();
+  Actor.prototype.constructor = Actor;
+
+  function onEntitySpaceChanged( event ) {
+    var data = event.data;
+    if( data.previous === null && data.current !== null && this.owner !== null ) {
+      this.provider.registerComponent( this.owner.id, this );
+    }
+
+    if( data.previous !== null && data.current === null && this.owner !== null ) {
+      this.provider.unregisterComponent( this.owner.id, this );
+    }
+  }
+
+  function onComponentOwnerChanged( event ) {
+    var data = event.data;
+    if( data.previous === null && this.owner !== null ) {
+      this.provider.registerComponent( this.owner.id, this );
+    }
+
+    if( this.owner === null && data.previous !== null ) {
+      this.provider.unregisterComponent( data.previous.id, this );
+    }
+  }
+
+  function onEntityActivationChanged( event ) {
+    var active = event.data;
+    if( active ) {
+      this.provider.registerComponent( this.owner.id, this );
+    } else {
+      this.provider.unregisterComponent( this.owner.id, this );
+    }
+  }
+
+  var prototype = {
+    onEntitySpaceChanged: onEntitySpaceChanged,
+    onComponentOwnerChanged: onComponentOwnerChanged,
+    onEntityActivationChanged: onEntityActivationChanged
+  };
+  extend( Actor.prototype, prototype );
+
+  return Actor;
+
+});
+define('core/resources/event-map',['require','core/get','core/resources/script'],function( require ) {
+
+  var get = require( "core/get" );
+  var Script = require( "core/resources/script" );
+
+  var EventMap = function( data ) {
+    data = data || {};
+    var map = {};
+
+    var getRequests = [];
+    var eventNames = Object.keys( data );
+
+    for( var eventName in eventNames ) {
+      if( "string" === typeof data[eventName] ) {
+        getRequests.push({
+          type: Script,
+          url: data[eventName],
+          onsuccess: function( script ) {
+            map[eventName] = script;
+          },
+          onfailure: function( error ) {
+            console.log( "error loading script: " + data[eventName] );
+            throw error;
+          }
+        });
+      } else if( "function" === typeof data[eventName] ) {
+        map[eventName] = data[eventName];
+      }
+    }
+    get( getRequests );
+
+    return map;
+  };
+
+  return EventMap;
+
+});
+
+if ( typeof define !== "function" ) {
+  var define = require( "amdefine" )( module );
+}
+
+define('core/engine',['require','_math','common/multicast-delegate','core/request-animation-frame-loop','core/clock','core/dependency-scheduler','core/function-task','core/timer','core/event','core/get','core/loaders/default','core/loaders/procedural','base/component','base/service','base/extension','core/space','core/entity','core/components/transform','core/resources/script','core/services/updater','core/components/actor','core/resources/event-map'],function ( require ) {
   
   var _Math = require( "_math" );
   
@@ -4860,18 +5013,31 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
     Extension: require( "base/extension" )
   };
 
-  var simulation = {
-    Space: require( "core/space" ),
-    Entity: require( "core/entity" )
-  };
+  var Space = require( "core/space" );
+  var Entity = require( "core/entity" );
 
   var core = new base.Extension( "core", {
     components: {
-      Transform: require( "core/components/transform" )
+      "Transform": require( "core/components/transform" )
     },
     resources: {
-      Script: require( "core/resources/script" )
+      "Script": require( "core/resources/script" )
     }    
+  });
+
+  var logic = new base.Extension( "logic", {
+    services: {
+      "updater": {
+        service: require( "core/services/updater" ),
+        components: {
+          "Actor": require( "core/components/actor" )
+        },
+        resources: {}
+      }
+    },
+    resources: {
+      "EventMap": require( "core/resources/event-map" )
+    }
   });
   
   function simulationLoop() {
@@ -4884,9 +5050,8 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
     var delta = timestamp - this.cachedTimestamp;
     this.cachedTimestamp = timestamp;
     
-    // Update system clocks
+    // Update system clock
     this.realClock.update( delta );
-    this.simulationClock.update( delta );
     
     // Update scheduler and run all tasks
     this._scheduler.update();
@@ -4907,7 +5072,8 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
 
     // System clocks
     this.realClock = new Clock();
-    this.simulationClock = new Clock();
+    // The simulation clock receives update signals from the realtime clock
+    this.simulationClock = new Clock( this.realClock.signal );
     
     this._scheduler = new Scheduler();
     
@@ -4924,10 +5090,10 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
     // Base prototypes, useful for extending the engine at runtime
     this.base = base;
 
-    this.simulation = {
-      Space: simulation.Space.bind( null, this.simulationClock ),
-      Entity: simulation.Entity
-    };
+    this.Space = Space;
+    this.RealSpace = Space.bind( null, this.realClock );
+    this.SimulationSpace = Space.bind( null, this.simulationClock );
+    this.Entity = Entity;
   
     // Registered extensions go in here; They are also exposed as properties
     // on the engine instance
@@ -4935,6 +5101,9 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
 
     // Register core extension
     this.registerExtension( core );
+
+    // Register logic extension
+    this.registerExtension( logic );
   };
   
   function suspend() {
@@ -4997,6 +5166,10 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
         for( j = 0, m = componentNames.length; j < m; ++ j ) {
           componentName = componentNames[j];
           ComponentConstructor = components[componentName].bind( null, service );
+          var componentProperties = Object.keys(components[componentName]);
+          for (i = 0, l = componentProperties.length; i < l; ++ i) {
+            ComponentConstructor[componentProperties[i]] = components[componentName][componentProperties[i]];
+          }
           extensionInstance[componentName] = ComponentConstructor;
         }
 
@@ -5005,11 +5178,15 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
         for( j = 0, m = resourceNames.length; j < m; ++ j ) {
           resourceName = resourceNames[j];
           ResourceConstructor = resources[resourceName].bind( null, service );
+          var resourceProperties = Object.keys(resources[resourceName]);
+          for (i = 0, l = resourceProperties.length; i < l; ++ i) {
+            ResourceConstructor[resourceProperties[i]] = resources[resourceName][resourceProperties[i]];
+          }
           extensionInstance[resourceName] = ResourceConstructor;
         }
       }
     }
-    
+
     components = extension.components;
     componentNames = Object.keys( components );
     for( i = 0, l = componentNames.length; i < l; ++ i ) {
@@ -5025,7 +5202,7 @@ define('core/engine',['require','_math','common/multicast-delegate','core/reques
       ResourceConstructor = resources[resourceName];
       extensionInstance[resourceName] = ResourceConstructor;
     }
-    
+
     this._extensions[extension.name] = extensionInstance;
     if( !this.hasOwnProperty( name ) ) {
       this[extension.name] = extensionInstance;
