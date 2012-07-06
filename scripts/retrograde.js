@@ -5,8 +5,9 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
   require(
     [ "gladius-core",
-      "gladius-cubicvr" ],
-    function( Gladius, cubicvrExtension ) {
+      "gladius-cubicvr",
+      "gladius-input" ],
+    function( Gladius, cubicvrExtension, inputExtension ) {
 
   var engine = new Gladius();
 
@@ -28,6 +29,13 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
     }
   };
   engine.registerExtension( cubicvrExtension, cubicvrOptions );
+
+  var inputOptions = {
+    dispatcher: {
+      element: document
+    }
+  };
+  engine.registerExtension( inputExtension, inputOptions );
 
   var resources = {};
 
@@ -126,7 +134,19 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
         },
         onfailure: function( error ) {
         }
+      },
+
+      // input extension
+      {
+        type: engine.findExtension( "gladius-input" ).Map,
+        url: "assets/camera-controls.json",
+        onsuccess: function( inputMap ) {
+          resources.cameraControls = inputMap;
+        },
+        onfailure: function( error ) {
+        }
       }
+
     ],
     {
       oncomplete: game.bind( null, engine, resources )
@@ -135,8 +155,10 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
   });
 
   function game( engine, resources ) {
+    var math = engine.math;
     var space = new engine.SimulationSpace();
     var cubicvr = engine.findExtension( "gladius-cubicvr" );
+    var input = engine.findExtension( "gladius-input" );
     var earthDistance = 5
       , marsDistance = earthDistance * 1.5;
 
@@ -228,10 +250,43 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
     space.add( sun );
 
+    var cameraLogic = {
+      "Update": function(event) {
+        if (!this.owner.hasComponent("Controller")) return;
+
+        var controller = this.owner.findComponent("Controller")
+          , transform = this.owner.findComponent("Transform");
+
+        var rotation;
+        if (controller.states["PanUp"])
+          rotation = [space.clock.delta * 0.0005, 0, 0];
+        if (controller.states["PanDown"])
+          rotation = [-space.clock.delta * 0.0005, 0, 0];
+        if (controller.states["PanLeft"])
+          rotation = [0, space.clock.delta * 0.0005, 0];
+        if (controller.states["PanRight"])
+          rotation = [0, -space.clock.delta * 0.0005, 0];
+
+        if (rotation)
+          transform.setRotation(math.vector3.add(rotation, transform.rotation));
+
+        var position;
+        if (controller.states["MoveForward"])
+          position = [0, 0, space.clock.delta * 0.01];
+        if (controller.states["MoveBackward"])
+          position = [0, 0, -space.clock.delta * 0.01];
+
+        if (position)
+          transform.setPosition(math.vector3.add(position, transform.position));
+      }
+    };
+
     space.add( new engine.Entity( "camera1",
       [
         new engine.core.Transform([0,0,-23], [Math.PI, 0, 0]),
-        new cubicvr.Camera()
+        new cubicvr.Camera(),
+        new input.Controller( resources.cameraControls ),
+        new engine.logic.Actor( cameraLogic )
       ]
     ));
 

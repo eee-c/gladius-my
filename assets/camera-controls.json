@@ -1,0 +1,10 @@
+{
+  "States": {
+    "PanUp":        [ "I" ],
+    "PanDown":      [ "M" ],
+    "PanLeft":      [ "J" ],
+    "PanRight":     [ "K" ],
+    "MoveForward":  [ "O" ],
+    "MoveBackward": [ "L" ]
+  }
+}
