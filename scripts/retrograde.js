@@ -250,6 +250,50 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
     space.add( sun );
 
+    function rotate3d(p1, p2, p0, theta) {
+      var p = math.vector3.subtract(p1, p0)
+        , q = new math.Vector3()
+        , N = math.vector3.subtract(p2, p1)
+        , Nm = Math.sqrt(N[0]*N[0] + N[1]*N[1] + N[2]*N[2]);
+
+      // rotation axis unit vector
+      var n = new math.Vector3(N[0]/Nm, N[1]/Nm, N[2]/Nm);
+
+      // Matrix common factors
+      var c = Math.cos(theta)
+        , t = (1 - Math.cos(theta))
+        , s = Math.sin(theta)
+        , X = n[0]
+        , Y = n[1]
+        , Z = n[2];
+
+      // Matrix 'M'
+      var d11 = t*X*X + c
+        , d12 = t*X*Y - s*Z
+        , d13 = t*X*Z + s*Y
+        , d21 = t*X*Y + s*Z
+        , d22 = t*Y*Y + c
+        , d23 = t*Y*Z - s*X
+        , d31 = t*X*Z - s*Y
+        , d32 = t*Y*Z + s*X
+        , d33 = t*Z*Z + c;
+
+      //            |p.x|
+      // Matrix 'M'*|p.y|
+      //            |p.z|
+      q[0] = d11*p[0] + d12*p[1] + d13*p[2];
+      q[1] = d21*p[0] + d22*p[1] + d23*p[2];
+      q[2] = d31*p[0] + d32*p[1] + d33*p[2];
+
+      return q;
+    }
+
+    var p1 = [0,0,0],
+        p2 = [1,0,0],
+        p0 = [0,1,1];
+    var rot = rotate3d(p1, p2, p0, Math.PI/2);
+    debugger;
+
     var cameraLogic = {
       "Update": function(event) {
         if (!this.owner.hasComponent("Controller")) return;
@@ -263,7 +307,20 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
         if (controller.states["PanDown"])
           rotation = [-space.clock.delta * 0.0005, 0, 0];
         if (controller.states["PanLeft"])
+          rotation = [-space.clock.delta * 0.0005, 0, 0];
+        if (controller.states["PanLeft"]) {
+          var frame = new engine.Entity( "camera-frame-of-reference", [transform]);
+          space.add(frame);
+          this.owner.setParent(frame);
+
+          transform = this.owner.findComponent("Transform");
           rotation = [0, space.clock.delta * 0.0005, 0];
+          transform.setRotation(math.vector3.add(rotation, transform.rotation));
+
+          rotation = undefined;
+          this.owner.setParent(undefined);
+          space.remove(frame);
+        }
         if (controller.states["PanRight"])
           rotation = [0, -space.clock.delta * 0.0005, 0];
 
@@ -271,18 +328,30 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
           transform.setRotation(math.vector3.add(rotation, transform.rotation));
 
         var position;
-        if (controller.states["MoveForward"])
-          position = [0, 0, space.clock.delta * 0.01];
-        if (controller.states["MoveBackward"])
-          position = [0, 0, -space.clock.delta * 0.01];
+        if (controller.states["MoveForward"]) {
+          var direction = math.transform.translate([0, 0, -space.clock.delta * 0.005]);
+          rotation = math.transform.rotate(transform.rotation);
+          direction = math.matrix4.multiply( [direction, rotation] );
+          direction = [direction[12], direction[13], direction[14]];
+          transform.setPosition(math.vector3.add(direction, transform.position));
+        }
+
+        if (controller.states["MoveBackward"]) {
+          var direction = math.transform.translate([0, 0, space.clock.delta * 0.005]);
+          rotation = math.transform.rotate(transform.rotation);
+          direction = math.matrix4.multiply( [direction, rotation] );
+          direction = [direction[12], direction[13], direction[14]];
+          transform.setPosition(math.vector3.add(direction, transform.position));
+        }
 
         if (position)
           transform.setPosition(math.vector3.add(position, transform.position));
       }
     };
 
-    space.add( new engine.Entity( "camera1",
+    space.add(new engine.Entity("camera1",
       [
+
         new engine.core.Transform([0,0,-23], [Math.PI, 0, 0]),
         new cubicvr.Camera(),
         new input.Controller( resources.cameraControls ),
@@ -390,7 +459,7 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
         }
       }
       else {
-        console.log(code);
+        // console.log(code);
       }
     });
 
