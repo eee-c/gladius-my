@@ -184,11 +184,21 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
           space.findNamed("right-leg")
         ));
 
+        space.add(new engine.Entity("camera-frame",
+          [
+            new engine.core.Transform()
+          ],
+          [],
+          space.findNamed("body")
+
+        ));
         space.add(new engine.Entity("camera",
           [
-            new engine.core.Transform([20,0,-23], [Math.PI, -Math.PI/8, 0]),
+            new engine.core.Transform([0, 10, 23], [-Math.PI/8, 0, 0]),
             new cubicvr.Camera()
-          ]
+          ],
+          ["avatar"],
+          space.findNamed("camera-frame")
         ));
 
         var w = 500
