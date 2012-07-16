@@ -43,7 +43,6 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
       game(engine, resources);
 
-
       function game(engine, resources) {
         var math = engine.math;
         var space = new engine.SimulationSpace();
@@ -65,13 +64,29 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
           space.findNamed("body")
         ));
 
-        space.add(new engine.Entity("right-arm",
+        space.add(new engine.Entity("right-arm-frame1",
           [
-            new engine.core.Transform([0.8, -0.2, 0], [0, -Math.PI/8, Math.PI/3]),
-            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+            new engine.core.Transform([0.5, 0, 0], [0, -Math.PI/8, Math.PI/3])
           ],
           ["avatar"],
           space.findNamed("body")
+        ));
+
+        space.add(new engine.Entity("right-arm-frame",
+          [
+            new engine.core.Transform()
+          ],
+          ["avatar"],
+          space.findNamed("right-arm-frame1")
+        ));
+
+        space.add(new engine.Entity("right-arm",
+          [
+            new engine.core.Transform([0, -0.5, 0]),
+            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+          ],
+          ["avatar"],
+          space.findNamed("right-arm-frame")
         ));
 
         space.add(new engine.Entity("right-hand",
@@ -83,13 +98,29 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
           space.findNamed("right-arm")
         ));
 
-        space.add(new engine.Entity("left-arm",
+        space.add(new engine.Entity("left-arm-frame1",
           [
-            new engine.core.Transform([-0.8, -0.2, 0], [0, 3*Math.PI/2, -Math.PI/3]),
-            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+            new engine.core.Transform([-0.5, 0, 0], [0, 3*Math.PI/2, -Math.PI/3])
           ],
           ["avatar"],
           space.findNamed("body")
+        ));
+
+        space.add(new engine.Entity("left-arm-frame",
+          [
+            new engine.core.Transform()
+          ],
+          ["avatar"],
+          space.findNamed("left-arm-frame1")
+        ));
+
+        space.add(new engine.Entity("left-arm",
+          [
+            new engine.core.Transform([0, -0.5, 0]),
+            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+          ],
+          ["avatar"],
+          space.findNamed("left-arm-frame")
         ));
 
         space.add(new engine.Entity("left-hand",
@@ -101,13 +132,21 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
           space.findNamed("left-arm")
         ));
 
-        space.add(new engine.Entity("left-leg",
+        space.add(new engine.Entity("left-leg-frame",
           [
-            new engine.core.Transform([-0.5, -1.5, 0], [0, 0, 0]),
-            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+            new engine.core.Transform([-0.5, -0.5, 0])
           ],
           ["avatar"],
           space.findNamed("body")
+        ));
+
+        space.add(new engine.Entity("left-leg",
+          [
+            new engine.core.Transform([0, -1, 0]),
+            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+          ],
+          ["avatar"],
+          space.findNamed("left-leg-frame")
         ));
 
         space.add(new engine.Entity("left-foot",
@@ -119,13 +158,21 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
           space.findNamed("left-leg")
         ));
 
-        space.add(new engine.Entity("right-leg",
+        space.add(new engine.Entity("right-leg-frame",
           [
-            new engine.core.Transform([0.5, -1.5, 0], [0, 0, 0]),
-            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+            new engine.core.Transform([0.5, -0.5, 0])
           ],
           ["avatar"],
           space.findNamed("body")
+        ));
+
+        space.add(new engine.Entity("right-leg",
+          [
+            new engine.core.Transform([0, -1, 0]),
+            new cubicvr.Model(resources.cylinder_mesh, resources.blue_material)
+          ],
+          ["avatar"],
+          space.findNamed("right-leg-frame")
         ));
 
         space.add(new engine.Entity("right-foot",
@@ -139,10 +186,28 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
 
         space.add(new engine.Entity("camera",
           [
-            new engine.core.Transform([0,0,-23], [Math.PI, 0, 0]),
+            new engine.core.Transform([20,0,-23], [Math.PI, -Math.PI/8, 0]),
             new cubicvr.Camera()
           ]
         ));
+
+        var w = 500
+          , arm1 = space.findNamed("left-arm-frame").findComponent("Transform")
+          , arm2 = space.findNamed("right-arm-frame").findComponent("Transform")
+          , leg1 = space.findNamed("left-leg-frame").findComponent("Transform")
+          , leg2 = space.findNamed("right-leg-frame").findComponent("Transform");
+
+        var task = new engine.FunctionTask( function() {
+          var t = space.clock.time
+            , amplitude = (w/2 - Math.abs((t % (2*w)) - w))/w;
+
+          leg1.setRotation([    amplitude*(Math.PI/8), 0, 0]);
+          leg2.setRotation([ -1*amplitude*(Math.PI/8), 0, 0]);
+
+          arm1.setRotation([ 0, 0, -1*amplitude*(Math.PI/8)]);
+          arm2.setRotation([ -1*amplitude*(Math.PI/8), 0, 0]);
+        });
+        task.start();
       }
 
       // Engine debugging monitor
