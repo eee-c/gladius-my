@@ -4,14 +4,21 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
   });
 
   require(
-    [ "gladius-core", "gladius-cubicvr" ],
-    function( Gladius, cubicvrExtension ) {
+    [ "gladius-core", "gladius-cubicvr", "gladius-input" ],
+    function( Gladius, cubicvrExtension, inputExtension ) {
       var engine = new Gladius();
 
       // CubicVR rendering backend
       engine.registerExtension(cubicvrExtension, {
         renderer: {
           canvas: document.getElementById( "test-canvas" )
+        }
+      });
+
+      // User input extension
+      engine.registerExtension(inputExtension, {
+        dispatcher: {
+          element: document
         }
       });
 
@@ -39,6 +46,15 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
         blue_material: colorMaterial(0, 0, 255)
       };
 
+      // Input states
+      var cameraControls = new engine["gladius-input"].Map({
+        "States": {
+          "PanLeft":      [ "J" ],
+          "PanRight":     [ "K" ]
+        }
+      });
+      resources['camera_controls'] = cameraControls;
+
       engine.resume();
 
       game(engine, resources);
@@ -47,6 +63,8 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
         var math = engine.math;
         var space = new engine.SimulationSpace();
         var cubicvr = engine.findExtension("gladius-cubicvr");
+        var input = engine.findExtension( "gladius-input" );
+
         space.add(new engine.Entity("body",
           [
             new engine.core.Transform([0, 0, 0], [0, 0, Math.PI]),
@@ -184,13 +202,33 @@ document.addEventListener( "DOMContentLoaded", function( e ) {
           space.findNamed("right-leg")
         ));
 
+        var cameraLogic = {
+          "Update": function(event) {
+            if (!this.owner.hasComponent("Controller")) return;
+
+            var controller = this.owner.findComponent("Controller")
+              , transform = this.owner.findComponent("Transform");
+
+            var rotation;
+            if (controller.states["PanLeft"]) {
+              rotation = [0, -space.clock.delta * 0.001, 0];
+            }
+            if (controller.states["PanRight"])
+              rotation = [0, space.clock.delta * 0.001, 0];
+
+            if (rotation)
+              transform.setRotation(math.vector3.add(rotation, transform.rotation));
+          }
+        };
+
         space.add(new engine.Entity("camera-frame",
           [
-            new engine.core.Transform()
+            new engine.core.Transform(),
+            new input.Controller( resources.camera_controls ),
+            new engine.logic.Actor( cameraLogic )
           ],
           [],
           space.findNamed("body")
-
         ));
         space.add(new engine.Entity("camera",
           [
